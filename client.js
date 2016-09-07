@@ -21,6 +21,7 @@ var client = {
         // Currently, all returned messages are video data. However, this is
         // extensible with full-spec JSON-RPC.
         this.socket.onmessage = function (messageEvent) {
+	    console.log(messageEvent);
             video.src = "data:image/jpeg;base64," + messageEvent.data;
         };
     },

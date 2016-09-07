@@ -57,7 +57,7 @@ class WebSocket(tornado.websocket.WebSocketHandler):
 
         # Start an infinite loop when this is called
         if message == "read_camera":
-            self.camera_loop = PeriodicCallback(self.loop, 10)
+            self.camera_loop = PeriodicCallback(self.loop, 1)
             self.camera_loop.start()
 
         # Extensibility for other methods
@@ -73,8 +73,7 @@ class WebSocket(tornado.websocket.WebSocketHandler):
             img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             img.save(sio, "JPEG")
         else:
-            camera.capture(sio, "jpeg", use_video_port=True)
-
+            camera.capture(sio, "jpeg", use_video_port=False)
         try:
             self.write_message(base64.b64encode(sio.getvalue()))
         except tornado.websocket.WebSocketClosedError:
@@ -102,7 +101,7 @@ else:
     camera = picamera.PiCamera()
     camera.start_preview()
 
-resolutions = {"high": (1280, 720), "medium": (640, 480), "low": (320, 240)}
+resolutions = {"high": (1280, 720), "medium": (480, 360), "low": (320, 240)}
 if args.resolution in resolutions:
     if args.use_usb:
         w, h = resolutions[args.resolution]
