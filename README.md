@@ -1,36 +1,15 @@
-camp
+raspicamserver
 ====
 
-Another Raspberry Pi camera webserver.
+Raspberry Pi camera webserver and simple LED system controller.
 
 ![](img/example.png)
 
-What it does
-============
-
-Hosts a website where you can view your webcam in real time.
-
-Why I wrote it
-==============
-
-There are a *lot* of tutorials out there on how to turn your pi into a webcam
-server. Most of them involve installing [motion](http://www.lavrsen.dk/foswiki/bin/view/Motion),
-which works great in many use cases. However, I wanted something simpler. Namely,
-I wanted:
-
- * Minimal configuration
- * Password protection
- * One-way streaming
- * Easily customizable webpage
- * Extensible server
-
-camp does just this. Nothing else. This (hopefully) makes it the simplest
-and fastest option out there.
 
 Installation
 ============
 
-Camp uses [tornado](http://www.tornadoweb.org/en/stable/) to create a
+The dependencies are [tornado](http://www.tornadoweb.org/en/stable/) to create a
 web server. It can interact with the [Pi camera](http://www.adafruit.com/products/1367)
 with the aptly named [picamera](http://picamera.readthedocs.org/en/release-1.7/)
 module, or it can use USB webcams with [opencv](http://opencv.org/)
@@ -60,7 +39,7 @@ Use with `python server.py --use-usb`.
 
 ![](img/login.png)
 
-With the `--require-login` flag, camp will open a login page before allowing
+With the `--require-login` flag, it will open a login page before allowing
 webcam access.
 
 The default password is "raspberry". In order to change it, run this in your
