@@ -34,6 +34,14 @@ class IndexHandler(tornado.web.RequestHandler):
         else:
             self.render("index.html", port=args.port)
 
+class Video2Handler(tornado.web.RequestHandler):
+
+    def get(self):
+        if args.require_login and not self.get_secure_cookie(COOKIE_NAME):
+            self.redirect("/login")
+        else:
+            self.render("video2.html", port=args.port)
+
 
 class LoginHandler(tornado.web.RequestHandler):
 
@@ -51,12 +59,9 @@ class LoginHandler(tornado.web.RequestHandler):
 
 class LightsHandler(tornado.web.RequestHandler):
 
-    def set_default_headers(self):
-	self.set_header("Access-Control-Allow-Origin", "*")
-
     def get(self):
-	self.render("lights.html")
-	
+	       self.render("lights.html")
+
 
 class WebSocket(tornado.websocket.WebSocketHandler):
 
@@ -67,6 +72,9 @@ class WebSocket(tornado.websocket.WebSocketHandler):
         if message == "read_camera":
             self.camera_loop = PeriodicCallback(self.loop, 1)
             self.camera_loop.start()
+
+        elif message == "stop":
+            self.camera_loop.stop()
 
         # Extensibility for other methods
         else:
@@ -121,7 +129,7 @@ else:
     raise Exception("%s not in resolution options." % args.resolution)
 
 handlers = [(r"/", IndexHandler), (r"/login", LoginHandler),
-	    (r"/lights", LightsHandler),
+	        (r"/lights", LightsHandler), (r"/video2", Video2Handler),
             (r"/websocket", WebSocket),
             (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': ROOT})]
 application = tornado.web.Application(handlers, cookie_secret=PASSWORD)
