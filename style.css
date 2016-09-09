@@ -46,6 +46,10 @@ button:hover, button:active {
     background: #d25;
 }
 
+.fa-6 {
+    font-size: 10em !important;
+}
+
 .centered {
     position: fixed;
     margin-top: 10%;
@@ -69,4 +73,12 @@ button:hover, button:active {
 
 #video {
     margin: 25px auto;
+}
+
+.color-red {
+    color: #cc1414;
+}
+
+.color-green {
+    color: green;
 }

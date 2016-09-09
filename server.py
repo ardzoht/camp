@@ -49,6 +49,14 @@ class LoginHandler(tornado.web.RequestHandler):
             time.sleep(1)
             self.redirect(u"/login?error")
 
+class LightsHandler(tornado.web.RequestHandler):
+
+    def set_default_headers(self):
+	self.set_header("Access-Control-Allow-Origin", "*")
+
+    def get(self):
+	self.render("lights.html")
+	
 
 class WebSocket(tornado.websocket.WebSocketHandler):
 
@@ -113,10 +121,11 @@ else:
     raise Exception("%s not in resolution options." % args.resolution)
 
 handlers = [(r"/", IndexHandler), (r"/login", LoginHandler),
+	    (r"/lights", LightsHandler),
             (r"/websocket", WebSocket),
             (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': ROOT})]
 application = tornado.web.Application(handlers, cookie_secret=PASSWORD)
-application.listen(args.port)
+application.listen(args.port, address="10.33.10.18")
 
 webbrowser.open("http://localhost:%d/" % args.port, new=2)
 
