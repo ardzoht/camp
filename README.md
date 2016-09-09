@@ -3,9 +3,6 @@ raspicamserver
 
 Raspberry Pi camera webserver and simple LED system controller.
 
-![](img/example.png)
-
-
 Installation
 ============
 
@@ -67,10 +64,6 @@ the right file.
 
 The website consists of `index.html`, `login.html`, and `style.css`. These can be
 edited to change the look of camp.
-
-If you want to add in extra functionality, edit `client.js` and `server.py`.
-The client should send a request to the server, which will then cause the
-server to do something.
 
 If you want to add in extra camera features, opencv comes with a lot of useful
 computer vision algorithms. Check out its functionality before writing your
