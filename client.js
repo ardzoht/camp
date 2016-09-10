@@ -1,7 +1,7 @@
 /*global $, WebSocket, console, window, document*/
 "use strict";
 
-var baseURL = "http://10.33.10.18:8000/GPIO/";
+var baseURL = "http://10.33.8.140:8000/GPIO/";
 var username = "webiopi";
 var password = "raspberry";
 var gpiofront = 0;
@@ -20,6 +20,7 @@ var client = {
 
         this.socket = new WebSocket("ws://" + window.location.hostname + ":" + port + "/websocket");
 
+	console.log("connecting to: " + this.socket.url);
         // Request the video stream once connected
         this.socket.onopen = function () {
             console.log("Connected!");
@@ -63,7 +64,7 @@ var handlers = {
        else gpioback = 0
        let completeUrl = baseURL + "3" + "/value/" + gpioback;
 	
-	console.log("posting: " + gpioback);
+	console.log("posting: " + completeUrl);
         $.ajax({
             url: completeUrl,
             type: 'POST',
@@ -79,7 +80,7 @@ var handlers = {
        else gpioleft = 0
        let completeUrl = baseURL + "27" + "/value/" + gpioleft;
 	
-	console.log("posting: " + gpioleft);	
+	console.log("posting: " + completeUrl);	
         $.ajax({
             url: completeUrl,
             type: 'POST',
@@ -95,7 +96,7 @@ var handlers = {
 
        let completeUrl = baseURL + "17" + "/value/" + gpioright;
 
-	console.log("posting: " + gpioright);
+	console.log("posting: " + completeUrl);
 
         $.ajax({
             url: completeUrl,
@@ -209,6 +210,7 @@ var handlers = {
 
 $(document).ready(function() {
     handlers.getGPIO();
+    console.log("connecting to: " + baseURL);
     $('#light-front').click(handlers.postGPIOHandlerFront);
     $('#light-back').click(handlers.postGPIOHandlerBack);
     $('#light-left').click(handlers.postGPIOHandlerLeft);

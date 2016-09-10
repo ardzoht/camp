@@ -40,7 +40,7 @@ class Video2Handler(tornado.web.RequestHandler):
         if args.require_login and not self.get_secure_cookie(COOKIE_NAME):
             self.redirect("/login")
         else:
-            self.render("video2.html", port=args.port)
+            self.render("video360.html", port=args.port)
 
 
 class LoginHandler(tornado.web.RequestHandler):
