@@ -16,7 +16,9 @@ p {
 }
 
 img {
-    width: 100%;
+    width: 40%;
+    display: block;
+    margin: auto;
 }
 
 input,

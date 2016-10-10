@@ -1,14 +1,14 @@
 /*global $, WebSocket, console, window, document*/
 "use strict";
-
-var baseURL = "http://10.33.8.140:8000/GPIO/";
+/*
+var baseURL = "http://10.33.10.18:8000/GPIO/";
 var username = "webiopi";
 var password = "raspberry";
 var gpiofront = 0;
 var gpioback = 0;
 var gpioleft = 0;
 var gpioright = 0;
-
+*/
 /**
  * Connects to Pi server and receives video data.
  */
@@ -20,7 +20,6 @@ var client = {
 
         this.socket = new WebSocket("ws://" + window.location.hostname + ":" + port + "/websocket");
 
-	console.log("connecting to: " + this.socket.url);
         // Request the video stream once connected
         this.socket.onopen = function () {
             console.log("Connected!");
@@ -30,8 +29,10 @@ var client = {
         // Currently, all returned messages are video data. However, this is
         // extensible with full-spec JSON-RPC.
         this.socket.onmessage = function (messageEvent) {
-            console.log(messageEvent);
+            var t0 = performance.now();
             video.src = "data:image/jpeg;base64," + messageEvent.data;
+            var t1 = performance.now();
+            console.log("Call to onmessage took " + (t1 - t0) + " milliseconds.")
         };
     },
 
@@ -41,6 +42,7 @@ var client = {
     }
 };
 
+/*
 var handlers = {
 
     postGPIOHandlerFront: function() {
@@ -64,7 +66,7 @@ var handlers = {
        else gpioback = 0
        let completeUrl = baseURL + "3" + "/value/" + gpioback;
 	
-	console.log("posting: " + completeUrl);
+	console.log("posting: " + gpioback);
         $.ajax({
             url: completeUrl,
             type: 'POST',
@@ -80,7 +82,7 @@ var handlers = {
        else gpioleft = 0
        let completeUrl = baseURL + "27" + "/value/" + gpioleft;
 	
-	console.log("posting: " + completeUrl);	
+	console.log("posting: " + gpioleft);	
         $.ajax({
             url: completeUrl,
             type: 'POST',
@@ -96,7 +98,7 @@ var handlers = {
 
        let completeUrl = baseURL + "17" + "/value/" + gpioright;
 
-	console.log("posting: " + completeUrl);
+	console.log("posting: " + gpioright);
 
         $.ajax({
             url: completeUrl,
@@ -112,20 +114,6 @@ var handlers = {
        var completeUrlBack = baseURL + "3" + "/value";
        var completeUrlLeft = baseURL + "27" + "/value";
        var completeUrlRight = baseURL + "17" + "/value";
-	/*
-       var myHeaders = new Headers();
-
-	var myInit = { method: 'GET',
-               headers: myHeaders,
-               mode: 'no-cors',
-               cache: 'default' };
-	var myRequest = new Request(completeUrlFront, myInit);
-
-	fetch(myRequest, myInit)
-		.then(function(response) {
-		gpiofront = response;
-		console.log(gpiofront);
-	});*/
 	
         $.ajax({
             url: completeUrlFront,
@@ -160,12 +148,12 @@ var handlers = {
 
     lightHandler: function() {
 
-	var front = $('#light-front');
-	var back = $('#light-back');
-	var left = $('#light-left');
-	var right = $('#light-right'); 
+    	var front = $('#light-front');
+    	var back = $('#light-back');
+    	var left = $('#light-left');
+    	var right = $('#light-right'); 
 
-	if(gpiofront == 1) { // change to GET request
+    	if(gpiofront == 1) { // change to GET request
             front.removeClass('color-red');
             front.addClass('color-green');
         }
@@ -210,7 +198,6 @@ var handlers = {
 
 $(document).ready(function() {
     handlers.getGPIO();
-    console.log("connecting to: " + baseURL);
     $('#light-front').click(handlers.postGPIOHandlerFront);
     $('#light-back').click(handlers.postGPIOHandlerBack);
     $('#light-left').click(handlers.postGPIOHandlerLeft);
@@ -219,5 +206,6 @@ $(document).ready(function() {
         handlers.lightHandler();
 	handlers.getGPIO();
     }, 2000);
-
+    
 });
+*/
