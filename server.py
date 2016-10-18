@@ -34,7 +34,7 @@ class IndexHandler(tornado.web.RequestHandler):
         else:
             self.render("index.html", port=args.port)
 
-
+"""
 class LoginHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -52,11 +52,11 @@ class LoginHandler(tornado.web.RequestHandler):
 class LightsHandler(tornado.web.RequestHandler):
 
     def set_default_headers(self):
-	self.set_header("Access-Control-Allow-Origin", "*")
+	   self.set_header("Access-Control-Allow-Origin", "*")
 
     def get(self):
-	self.render("lights.html")
-	
+	   self.render("lights.html")
+"""
 
 class WebSocket(tornado.websocket.WebSocketHandler):
 
@@ -65,7 +65,9 @@ class WebSocket(tornado.websocket.WebSocketHandler):
 
         # Start an infinite loop when this is called
         if message == "read_camera":
-            self.camera_loop = PeriodicCallback(self.loop, 1)
+            self.worker = CaptureThread()
+            self.worker.start()
+            self.camera_loop = PeriodicCallback(self.loop, 5)
             self.camera_loop.start()
 
         # Extensibility for other methods
@@ -74,19 +76,37 @@ class WebSocket(tornado.websocket.WebSocketHandler):
 
     def loop(self):
         """Sends camera images in an infinite loop."""
+        frame = self.worker.read_camera()
+        _ ,frame = camera.retrieve(frame)
         sio = io.StringIO()
-
-        if args.use_usb:
-            _, frame = camera.read()
-            img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-            img.save(sio, "JPEG")
-        else:
-            camera.capture(sio, "jpeg", use_video_port=False)
+        #_, frame = camera.read()
+        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        img.save(sio, "JPEG")
+        #_, image = cv2.imencode('.jpg', frame)
+        #numpy.save(sio, image)
+        #print image
         try:
+            #print("sending message")
             self.write_message(base64.b64encode(sio.getvalue()))
         except tornado.websocket.WebSocketClosedError:
             self.camera_loop.stop()
+            print ("Websocket closed")
 
+class CaptureThread(threading.Thread):
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self):
+        print "Capture worker started..."
+
+    def read_camera(self):
+        #e1 = cv2.getTickCount()
+        frame = camera.grab()
+        #e2 = cv2.getTickCount()
+        #time = (e2 - e1) / cv2.getTickFrequency()
+        #print time
+        return frame
 
 parser = argparse.ArgumentParser(description="Starts a webserver that "
                                  "connects to a webcam.")
@@ -96,37 +116,33 @@ parser.add_argument("--resolution", type=str, default="low", help="The "
                     "video resolution. Can be high, medium, or low.")
 parser.add_argument("--require-login", action="store_true", help="Require "
                     "a password to log in to webserver.")
-parser.add_argument("--use-usb", action="store_true", help="Use a USB "
-                    "webcam instead of the standard Pi camera.")
+parser.add_argument("--lights", action="store_true", help= "Use lights controller.")
+
 args = parser.parse_args()
 
-if args.use_usb:
-    import cv2
-    from PIL import Image
-    camera = cv2.VideoCapture(0)
-else:
-    import picamera
-    camera = picamera.PiCamera()
-    camera.start_preview()
+import cv2
+from PIL import Image, ImageDraw, ImageFont
+import numpy
+camera = cv2.VideoCapture(-1)
 
-resolutions = {"high": (1280, 720), "medium": (480, 360), "low": (320, 240)}
+resolutions = {"high": (1280, 720), "medium": (640, 480), "low": (320, 240)}
 if args.resolution in resolutions:
-    if args.use_usb:
-        w, h = resolutions[args.resolution]
-        camera.set(3, w)
-        camera.set(4, h)
-    else:
-        camera.resolution = resolutions[args.resolution]
+    w, h = resolutions[args.resolution]
+    camera.set(3, w)
+    camera.set(4,h)
+    time.sleep(2)
+    print "Resolution set to: "
+    print camera.get(3), camera.get(4)
+
 else:
     raise Exception("%s not in resolution options." % args.resolution)
 
-handlers = [(r"/", IndexHandler), (r"/login", LoginHandler),
-	    (r"/lights", LightsHandler),
+handlers = [(r"/", IndexHandler),
+           #(r"/login", LoginHandler),
+           #(r"/lights", LightsHandler),
             (r"/websocket", WebSocket),
             (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': ROOT})]
 application = tornado.web.Application(handlers, cookie_secret=PASSWORD)
-application.listen(args.port, address="10.33.10.18")
-
-webbrowser.open("http://localhost:%d/" % args.port, new=2)
+application.listen(args.port, address="0.0.0.0")
 
 tornado.ioloop.IOLoop.instance().start()

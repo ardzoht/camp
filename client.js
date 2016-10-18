@@ -1,6 +1,6 @@
 /*global $, WebSocket, console, window, document*/
 "use strict";
-
+/*
 var baseURL = "http://10.33.10.18:8000/GPIO/";
 var username = "webiopi";
 var password = "raspberry";
@@ -8,7 +8,7 @@ var gpiofront = 0;
 var gpioback = 0;
 var gpioleft = 0;
 var gpioright = 0;
-
+*/
 /**
  * Connects to Pi server and receives video data.
  */
@@ -29,7 +29,7 @@ var client = {
         // Currently, all returned messages are video data. However, this is
         // extensible with full-spec JSON-RPC.
         this.socket.onmessage = function (messageEvent) {
-            console.log(messageEvent);
+	    console.log(messageEvent);
             video.src = "data:image/jpeg;base64," + messageEvent.data;
         };
     },
@@ -40,6 +40,7 @@ var client = {
     }
 };
 
+/*
 var handlers = {
 
     postGPIOHandlerFront: function() {
@@ -111,20 +112,6 @@ var handlers = {
        var completeUrlBack = baseURL + "3" + "/value";
        var completeUrlLeft = baseURL + "27" + "/value";
        var completeUrlRight = baseURL + "17" + "/value";
-	/*
-       var myHeaders = new Headers();
-
-	var myInit = { method: 'GET',
-               headers: myHeaders,
-               mode: 'no-cors',
-               cache: 'default' };
-	var myRequest = new Request(completeUrlFront, myInit);
-
-	fetch(myRequest, myInit)
-		.then(function(response) {
-		gpiofront = response;
-		console.log(gpiofront);
-	});*/
 	
         $.ajax({
             url: completeUrlFront,
@@ -159,12 +146,12 @@ var handlers = {
 
     lightHandler: function() {
 
-	var front = $('#light-front');
-	var back = $('#light-back');
-	var left = $('#light-left');
-	var right = $('#light-right'); 
+    	var front = $('#light-front');
+    	var back = $('#light-back');
+    	var left = $('#light-left');
+    	var right = $('#light-right'); 
 
-	if(gpiofront == 1) { // change to GET request
+    	if(gpiofront == 1) { // change to GET request
             front.removeClass('color-red');
             front.addClass('color-green');
         }
@@ -217,5 +204,6 @@ $(document).ready(function() {
         handlers.lightHandler();
 	handlers.getGPIO();
     }, 2000);
-
+    
 });
+*/
