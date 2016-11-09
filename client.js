@@ -29,10 +29,8 @@ var client = {
         // Currently, all returned messages are video data. However, this is
         // extensible with full-spec JSON-RPC.
         this.socket.onmessage = function (messageEvent) {
-            var t0 = performance.now();
+	    console.log(messageEvent);
             video.src = "data:image/jpeg;base64," + messageEvent.data;
-            var t1 = performance.now();
-            console.log("Call to onmessage took " + (t1 - t0) + " milliseconds.")
         };
     },
 

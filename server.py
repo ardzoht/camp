@@ -65,7 +65,9 @@ class WebSocket(tornado.websocket.WebSocketHandler):
 
         # Start an infinite loop when this is called
         if message == "read_camera":
-            self.camera_loop = PeriodicCallback(self.loop, 10)
+            self.worker = CaptureThread()
+            self.worker.start()
+            self.camera_loop = PeriodicCallback(self.loop, 5)
             self.camera_loop.start()
 
         # Extensibility for other methods
@@ -74,22 +76,37 @@ class WebSocket(tornado.websocket.WebSocketHandler):
 
     def loop(self):
         """Sends camera images in an infinite loop."""
+        frame = self.worker.read_camera()
+        _ ,frame = camera.retrieve(frame)
         sio = io.StringIO()
-        _, frame = camera.read()
-        #img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        #img.save(sio, "JPEG")
-        _, image = cv2.imencode('.jpg', frame)
-        e1 = cv2.getTickCount()
-        numpy.save(sio, image)
-        e2 = cv2.getTickCount()
-        time = (e2 - e1) / cv2.getTickFrequency()
-        print image
+        #_, frame = camera.read()
+        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        img.save(sio, "JPEG")
+        #_, image = cv2.imencode('.jpg', frame)
+        #numpy.save(sio, image)
+        #print image
         try:
-            print("sending message")
-            self.write_message(base64.b64encode(image))
+            #print("sending message")
+            self.write_message(base64.b64encode(sio.getvalue()))
         except tornado.websocket.WebSocketClosedError:
             self.camera_loop.stop()
-            print ("error")
+            print ("Websocket closed")
+
+class CaptureThread(threading.Thread):
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self):
+        print "Capture worker started..."
+
+    def read_camera(self):
+        #e1 = cv2.getTickCount()
+        frame = camera.grab()
+        #e2 = cv2.getTickCount()
+        #time = (e2 - e1) / cv2.getTickFrequency()
+        #print time
+        return frame
 
 parser = argparse.ArgumentParser(description="Starts a webserver that "
                                  "connects to a webcam.")
@@ -116,6 +133,7 @@ if args.resolution in resolutions:
     time.sleep(2)
     print "Resolution set to: "
     print camera.get(3), camera.get(4)
+
 else:
     raise Exception("%s not in resolution options." % args.resolution)
 
