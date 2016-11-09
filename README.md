@@ -21,11 +21,6 @@ sudo pip install tornado Pillow picamera
 Once the dependencies are installed on your pi, you can clone this repository and
 run the server.
 
-```
-git clone https://github.com/patrickfuller/camp.git
-python camp/server.py
-```
-
 Navigate to http://your.r.pi.ip:8000 and check out your webcam.
 
 ####USB Camera
@@ -44,7 +39,6 @@ camp directory:
 
 ```
 python -c "import hashlib; import getpass; print(hashlib.sha512(getpass.getpass())).hexdigest()" > password.txt
-```
 
 This will prompt you for a password, encrypt it, and save the result in
 `password.txt`.
