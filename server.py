@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Creates an HTTP server with basic auth and websocket communication.
+Creates an HTTP server with websocket communication.
 """
 import argparse
 import base64
@@ -34,30 +34,6 @@ class IndexHandler(tornado.web.RequestHandler):
         else:
             self.render("index.html", port=args.port)
 
-"""
-class LoginHandler(tornado.web.RequestHandler):
-
-    def get(self):
-        self.render("login.html")
-
-    def post(self):
-        password = self.get_argument("password", "")
-        if hashlib.sha512(password).hexdigest() == PASSWORD:
-            self.set_secure_cookie(COOKIE_NAME, str(time.time()))
-            self.redirect("/")
-        else:
-            time.sleep(1)
-            self.redirect(u"/login?error")
-
-class LightsHandler(tornado.web.RequestHandler):
-
-    def set_default_headers(self):
-	   self.set_header("Access-Control-Allow-Origin", "*")
-
-    def get(self):
-	   self.render("lights.html")
-"""
-
 class WebSocket(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
@@ -70,7 +46,10 @@ class WebSocket(tornado.websocket.WebSocketHandler):
             self.camera_loop = PeriodicCallback(self.loop, 5)
             self.camera_loop.start()
 
-        # Extensibility for other methods
+        elif message == "get_frame":
+            pass
+            #send frame encoded
+
         else:
             print("Unsupported function: " + message)
 
@@ -90,7 +69,7 @@ class WebSocket(tornado.websocket.WebSocketHandler):
             self.write_message(base64.b64encode(sio.getvalue()))
         except tornado.websocket.WebSocketClosedError:
             self.camera_loop.stop()
-            print ("Websocket closed")
+            print ("Websocket closed (read_camera)")
 
 class CaptureThread(threading.Thread):
 
@@ -101,12 +80,18 @@ class CaptureThread(threading.Thread):
         print "Capture worker started..."
 
     def read_camera(self):
-        #e1 = cv2.getTickCount()
         frame = camera.grab()
-        #e2 = cv2.getTickCount()
-        #time = (e2 - e1) / cv2.getTickFrequency()
-        #print time
         return frame
+
+    def get_frame(self):
+        _ , frame = camera.read()
+        sio = io.StringIO()
+        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        img.save(sio, "JPEG")
+        try:
+            self.write_message(base64.b64encode(sio.getvalue()))
+        except tornado.websocket.WebSocketClosedError:
+            print ("Websocket closed (get_frame)")
 
 parser = argparse.ArgumentParser(description="Starts a webserver that "
                                  "connects to a webcam.")
@@ -114,15 +99,12 @@ parser.add_argument("--port", type=int, default=8000, help="The "
                     "port on which to serve the website.")
 parser.add_argument("--resolution", type=str, default="low", help="The "
                     "video resolution. Can be high, medium, or low.")
-parser.add_argument("--require-login", action="store_true", help="Require "
-                    "a password to log in to webserver.")
 parser.add_argument("--lights", action="store_true", help= "Use lights controller.")
 
 args = parser.parse_args()
 
 import cv2
 from PIL import Image, ImageDraw, ImageFont
-import numpy
 camera = cv2.VideoCapture(-1)
 
 resolutions = {"high": (1280, 720), "medium": (640, 480), "low": (320, 240)}
@@ -138,8 +120,6 @@ else:
     raise Exception("%s not in resolution options." % args.resolution)
 
 handlers = [(r"/", IndexHandler),
-           #(r"/login", LoginHandler),
-           #(r"/lights", LightsHandler),
             (r"/websocket", WebSocket),
             (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': ROOT})]
 application = tornado.web.Application(handlers, cookie_secret=PASSWORD)
